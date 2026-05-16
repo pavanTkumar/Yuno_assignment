@@ -30,7 +30,17 @@
       "Bash(curl -s \"http://127.0.0.1:8000/runs\")",
       "Bash(python3 -c \"import sys,json; [print\\('run',r['id'],'wf',r['workflow_id'],'status',r['status'],'tok',r['total_tokens'],'cost',r['cost_usd']\\) for r in json.load\\(sys.stdin\\)]\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('VALID bot:', d['result']['username']\\) if d.get\\('ok'\\) else print\\('INVALID:', d\\)\")",
-      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"What did I just ask you about? Answer in one short sentence.\",\"thread_id\":\"tg-984697010\"}' --max-time 120)"
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"What did I just ask you about? Answer in one short sentence.\",\"thread_id\":\"tg-984697010\"}' --max-time 120)",
+      "Bash(rmdir frontend *)",
+      "Bash(pnpm dlx *)",
+      "Bash(pnpm add *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('next',p.dependencies.next,'| xyflow',p.dependencies['@xyflow/react'],'| zustand',p.dependencies.zustand,'| tailwind',p.devDependencies.tailwindcss\\)\")",
+      "Bash(pnpm build *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(pnpm start *)",
+      "Bash(curl -s http://127.0.0.1:3000/workflows)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('nodes:',[n['id'] for n in d['nodes']],'edges:',[\\(e['source'],e['target']\\) for e in d['edges']]\\)\")",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write one sentence about Jupiter.\"}' --max-time 120)"
     ]
   }
 }
