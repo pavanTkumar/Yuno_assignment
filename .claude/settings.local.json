@@ -19,7 +19,16 @@
       "Bash(xargs kill -9)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(m['id']\\) for m in sorted\\(d['data'],key=lambda x:x['id']\\)]\")",
       "Bash(python3 -c ' *)",
-      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"prompt\":\"What planet did I just ask you about? Answer in one word.\",\"thread_id\":\"curl-gate\"}' --max-time 120)"
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"prompt\":\"What planet did I just ask you about? Answer in one word.\",\"thread_id\":\"curl-gate\"}' --max-time 120)",
+      "Bash(git -c user.email=claude@anthropic.com -c user.name=Claude commit -q -m 'feat: backend vertical slice — supervisor graph + SSE streaming *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s http://127.0.0.1:8000/agents/models)",
+      "Bash(curl -s \"http://127.0.0.1:8000/graph/topology?workflow_id=1\")",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/workflows/1/clone)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('cloned id=',d['id'],'name=',d['name'],'is_template=',d['is_template'],'agents=',[a['name'] for a in d['agents']]\\)\")",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write a 2-sentence note on the Moon.\",\"thread_id\":\"p2-run\"}' --max-time 150)",
+      "Bash(curl -s \"http://127.0.0.1:8000/runs\")",
+      "Bash(python3 -c \"import sys,json; [print\\('run',r['id'],'wf',r['workflow_id'],'status',r['status'],'tok',r['total_tokens'],'cost',r['cost_usd']\\) for r in json.load\\(sys.stdin\\)]\")"
     ]
   }
 }

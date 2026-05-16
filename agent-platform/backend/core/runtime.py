@@ -42,16 +42,15 @@ def get_checkpointer() -> AsyncSqliteSaver:
     return _saver
 
 
-async def stream_run(
-    spec: WorkflowSpec, prompt: str, thread_id: str
+async def stream_graph(
+    graph: CompiledStateGraph, prompt: str, thread_id: str
 ) -> AsyncIterator[SSEEvent]:
-    """Run a workflow and yield typed SSE events.
+    """Run a compiled supervisor graph and yield typed SSE events.
 
     Errors are emitted as a structured `error` event — the stream is never
     dropped mid-flight (per CLAUDE.md streaming rule).
     """
     try:
-        graph = build_supervisor(spec, get_checkpointer())
         config = {"configurable": {"thread_id": thread_id}}
         yield {"type": "node_start", "data": {"node": "supervisor"}}
         async for chunk in graph.astream(
@@ -67,6 +66,15 @@ async def stream_run(
         yield {"type": "error", "data": {"message": str(exc)}}
     finally:
         yield {"type": "done", "data": {"thread_id": thread_id}}
+
+
+async def stream_run(
+    spec: WorkflowSpec, prompt: str, thread_id: str
+) -> AsyncIterator[SSEEvent]:
+    """Build a graph from a static spec and stream it (Phase-1 slice path)."""
+    graph = build_supervisor(spec, get_checkpointer())
+    async for event in stream_graph(graph, prompt, thread_id):
+        yield event
 
 
 # Phase-1 convenience: the hardcoded slice spec.
