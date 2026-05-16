@@ -9,7 +9,17 @@
       "Bash(brew install *)",
       "Bash(uv venv *)",
       "Bash(uv pip *)",
-      "Bash(uv run python -c ' *)"
+      "Bash(uv run python -c ' *)",
+      "Bash(cp ../../.env .env)",
+      "Bash(uv run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/health)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"prompt\":\"In one short paragraph, what is LangGraph?\",\"thread_id\":\"gate-1\"}' --max-time 90)",
+      "Bash(lsof -ti:8000)",
+      "Bash(xargs kill -9)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(m['id']\\) for m in sorted\\(d['data'],key=lambda x:x['id']\\)]\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"prompt\":\"What planet did I just ask you about? Answer in one word.\",\"thread_id\":\"curl-gate\"}' --max-time 120)"
     ]
   }
 }
