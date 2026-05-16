@@ -28,7 +28,9 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('cloned id=',d['id'],'name=',d['name'],'is_template=',d['is_template'],'agents=',[a['name'] for a in d['agents']]\\)\")",
       "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write a 2-sentence note on the Moon.\",\"thread_id\":\"p2-run\"}' --max-time 150)",
       "Bash(curl -s \"http://127.0.0.1:8000/runs\")",
-      "Bash(python3 -c \"import sys,json; [print\\('run',r['id'],'wf',r['workflow_id'],'status',r['status'],'tok',r['total_tokens'],'cost',r['cost_usd']\\) for r in json.load\\(sys.stdin\\)]\")"
+      "Bash(python3 -c \"import sys,json; [print\\('run',r['id'],'wf',r['workflow_id'],'status',r['status'],'tok',r['total_tokens'],'cost',r['cost_usd']\\) for r in json.load\\(sys.stdin\\)]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('VALID bot:', d['result']['username']\\) if d.get\\('ok'\\) else print\\('INVALID:', d\\)\")",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"What did I just ask you about? Answer in one short sentence.\",\"thread_id\":\"tg-984697010\"}' --max-time 120)"
     ]
   }
 }

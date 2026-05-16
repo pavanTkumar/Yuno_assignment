@@ -12,12 +12,14 @@ from pydantic import BaseModel
 from api.agents import router as agents_router
 from api.graph import router as graph_router
 from api.runs import router as runs_router
+from api.telegram import router as telegram_router
 from api.workflows import router as workflows_router
 from config import configure_logging, log, settings
 from core.runtime import checkpointer_lifespan
 from core.templates import TEMPLATES
 from persistence import repo
 from persistence.db import SessionLocal, init_db
+from telegram.mount import telegram_lifespan
 
 configure_logging()
 
@@ -52,7 +54,7 @@ async def _seed_templates() -> None:
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await init_db()
     await _seed_templates()
-    async with checkpointer_lifespan():
+    async with checkpointer_lifespan(), telegram_lifespan(app):
         log.info("app.started", provider=settings.llm_provider)
         yield
     log.info("app.stopped")
@@ -71,6 +73,7 @@ app.include_router(agents_router)
 app.include_router(workflows_router)
 app.include_router(graph_router)
 app.include_router(runs_router)
+app.include_router(telegram_router)
 
 
 class HealthResponse(BaseModel):
