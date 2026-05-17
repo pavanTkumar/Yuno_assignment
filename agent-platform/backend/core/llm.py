@@ -44,4 +44,7 @@ def make_llm(model: str | None = None, *, temperature: float = 0.3) -> ChatOpenA
         api_key=settings.llm_api_key,
         base_url=settings.resolved_base_url,
         streaming=True,
+        # Without this, OpenAI streaming omits token counts -> usage events
+        # never fire and the live token/cost counter stays at 0.
+        stream_usage=True,
     )

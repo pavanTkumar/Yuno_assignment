@@ -40,37 +40,56 @@ def _node_from_namespace(namespace: tuple[str, ...]) -> str:
     return namespace[0].split(":", 1)[0]
 
 
+# create_agent-internal node names that are not user-facing agents.
+_INTERNAL_NODES = {"agent", "model", "tools", "__start__", "__end__"}
+
+
 def serialize_updates(payload: dict[str, Any], node: str) -> list[SSEEvent]:
-    """`updates` mode: {node_name: state_delta}. One node_end per entry."""
+    """`updates` mode: {node_name: state_delta}. One node_end per real node.
+
+    The real agent/supervisor name is the namespace head (`node`); the dict
+    key is often a create_agent-internal name (agent/model/tools) which we
+    don't surface to the canvas.
+    """
     events: list[SSEEvent] = []
     for name, delta in payload.items():
+        real = name if name not in _INTERNAL_NODES else node
+        if real in _INTERNAL_NODES:
+            continue
         text = ""
         msgs = (delta or {}).get("messages") if isinstance(delta, dict) else None
         if msgs:
-            last = msgs[-1]
-            text = _message_text(last)
+            text = _message_text(msgs[-1])
+        # `agent_message` carries the complete, correctly-attributed output of
+        # one agent step — reliable even when the sub-agent doesn't token-
+        # stream. The frontend builds the transcript from these.
+        if text.strip():
+            events.append(
+                {"type": "agent_message", "data": {"node": real, "text": text}}
+            )
         events.append(
-            {"type": "node_end", "data": {"node": name, "text": text}}
+            {"type": "node_end", "data": {"node": real, "text": text}}
         )
     return events
 
 
-def serialize_messages(payload: tuple[BaseMessage, dict[str, Any]], node: str) -> list[SSEEvent]:
-    """`messages` mode: (message_chunk, metadata). Stream tokens + usage."""
+def serialize_messages(
+    payload: tuple[BaseMessage, dict[str, Any]], namespace: tuple[str, ...]
+) -> list[SSEEvent]:
+    """`messages` mode: (message_chunk, metadata). Stream tokens + usage.
+
+    Tokens are emitted ONLY from a real agent subgraph (non-empty namespace
+    like ('researcher:..',)). The top-level empty-namespace re-emission is the
+    supervisor echoing the worker's text — skipping it removes the duplicate
+    while still counting its usage.
+    """
     msg, meta = payload
     events: list[SSEEvent] = []
-    # The namespace-derived `node` is the real agent name (researcher/writer/
-    # supervisor); meta["langgraph_node"] is the generic internal name
-    # (agent/model). Prefer the real name; fall back only when unknown.
-    src = node if node != "supervisor" else (
-        meta.get("langgraph_node", node) if isinstance(meta, dict) else node
-    )
-    if src in ("agent", "model"):
-        src = node
-
     content = _message_text(msg)
-    if content:
-        events.append({"type": "token", "data": {"node": src, "text": content}})
+
+    if content and namespace:
+        node = namespace[0].split(":", 1)[0]
+        events.append({"type": "token", "data": {"node": node, "text": content}})
 
     usage = _usage_from_message(msg)
     if usage:
@@ -102,7 +121,7 @@ def serialize_chunk(chunk: Any) -> list[SSEEvent]:  # noqa: ANN401 — heterogen
     if mode == "updates":
         return serialize_updates(payload, node)
     if mode == "messages":
-        return serialize_messages(payload, node)
+        return serialize_messages(payload, namespace)
     if mode == "custom":
         return serialize_custom(payload, node)
     return []

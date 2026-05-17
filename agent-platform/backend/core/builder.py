@@ -26,6 +26,7 @@ def spec_from_workflow(workflow: Workflow) -> WorkflowSpec:
             system_prompt=a.system_prompt,
             model=a.model,
             tools=list(a.tools or []),
+            handoff_to=a.handoff_to,
         )
         for a in workflow.agents
     ]

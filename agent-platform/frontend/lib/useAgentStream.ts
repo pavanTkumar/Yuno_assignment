@@ -6,6 +6,7 @@ import { api } from "./api";
 export type StreamEvent =
   | { type: "node_start"; data: { node: string } }
   | { type: "node_end"; data: { node: string; text: string } }
+  | { type: "agent_message"; data: { node: string; text: string } }
   | { type: "token"; data: { node: string; text: string } }
   | {
       type: "usage";

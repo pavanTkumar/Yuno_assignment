@@ -12,12 +12,15 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from sqlalchemy import select
+
 from config import log, settings
 from core.builder import get_graph
+from core.cost import estimate_cost
 from core.runtime import stream_graph
+from persistence import repo
 from persistence.db import SessionLocal
-from persistence.models import Workflow
-from sqlalchemy import select
+from persistence.models import RunStatus, Workflow
 
 # Min seconds between edit_text calls (Telegram rate limit is ~1/sec per chat).
 _EDIT_INTERVAL = 1.0
@@ -69,15 +72,29 @@ async def on_message(msg: Message) -> None:
 
     thread_id = f"tg-{msg.chat.id}"
     graph = get_graph(workflow)
+    model = workflow.agents[0].model if workflow.agents else ""
     placeholder = await msg.answer("Thinking…")
+
+    # Persist the run so Telegram conversations appear in the web Runs tab
+    # (shared thread_id ties them to the same checkpointed history).
+    async with SessionLocal() as db:
+        run = await repo.create_run(
+            db, workflow_id=workflow.id, thread_id=thread_id, prompt=msg.text
+        )
 
     buf = ""
     last_edit = 0.0
+    in_tok = out_tok = 0
+    status = RunStatus.completed
     try:
         async for event in stream_graph(graph, msg.text, thread_id):
             if event["type"] == "token":
                 buf += event["data"]["text"]
+            elif event["type"] == "usage":
+                in_tok = max(in_tok, event["data"]["input_tokens"])
+                out_tok += event["data"]["output_tokens"]
             elif event["type"] == "error":
+                status = RunStatus.error
                 buf += f"\n\n⚠️ {event['data']['message']}"
             now = time.monotonic()
             if buf and now - last_edit >= _EDIT_INTERVAL:
@@ -94,6 +111,15 @@ async def on_message(msg: Message) -> None:
                 pass
         else:
             await placeholder.edit_text("(no response)")
+        async with SessionLocal() as db:
+            await repo.finalize_run(
+                db,
+                run.id,
+                status=status,
+                input_tokens=in_tok,
+                output_tokens=out_tok,
+                cost_usd=estimate_cost(model, in_tok, out_tok),
+            )
 
 
 def make_bot() -> Bot:

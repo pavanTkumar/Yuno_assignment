@@ -52,6 +52,7 @@ async def stream_graph(
     """
     try:
         config = {"configurable": {"thread_id": thread_id}}
+        started: set[str] = {"supervisor"}
         yield {"type": "node_start", "data": {"node": "supervisor"}}
         async for chunk in graph.astream(
             {"messages": [HumanMessage(content=prompt)]},
@@ -60,6 +61,16 @@ async def stream_graph(
             subgraphs=True,
         ):
             for event in serialize_chunk(chunk):
+                # Synthesize node_start the first time a node streams output,
+                # so the canvas highlights each agent as it becomes active.
+                node = event["data"].get("node")
+                if (
+                    event["type"] in ("token", "node_end")
+                    and isinstance(node, str)
+                    and node not in started
+                ):
+                    started.add(node)
+                    yield {"type": "node_start", "data": {"node": node}}
                 yield event
     except Exception as exc:  # noqa: BLE001 — surface as event, don't close stream
         log.error("stream_run.error", error=str(exc), thread_id=thread_id)

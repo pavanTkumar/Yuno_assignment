@@ -46,6 +46,7 @@ async def _seed_templates() -> None:
                     model=settings.resolved_default_model,
                     tools=a.tools,
                     workflow_id=wf.id,
+                    handoff_to=a.handoff_to,
                 )
             log.info("template.seeded", name=tpl.name)
 

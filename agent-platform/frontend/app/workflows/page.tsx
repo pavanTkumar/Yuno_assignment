@@ -6,6 +6,7 @@ import { api, type Topology, type Workflow } from "@/lib/api";
 import { WorkflowCanvas } from "@/components/canvas/WorkflowCanvas";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { UsageBar } from "@/components/monitor/UsageBar";
+import { MonitorDrawer } from "@/components/monitor/MonitorDrawer";
 
 function WorkflowsView() {
   const params = useSearchParams();
@@ -55,8 +56,11 @@ function WorkflowsView() {
         <div className="min-w-0 flex-1">
           <WorkflowCanvas topology={topology} />
         </div>
-        <div className="w-100 border-l border-border bg-surface">
-          <ChatPanel workflowId={workflow.id} />
+        <div className="flex w-100 flex-col border-l border-border bg-surface">
+          <div className="min-h-0 flex-1">
+            <ChatPanel workflowId={workflow.id} />
+          </div>
+          <MonitorDrawer />
         </div>
       </div>
     </div>

@@ -34,6 +34,7 @@ async def create_agent(
     model: str,
     tools: list[str],
     workflow_id: int | None = None,
+    handoff_to: str | None = None,
 ) -> Agent:
     agent = Agent(
         name=name,
@@ -42,6 +43,7 @@ async def create_agent(
         model=model,
         tools=tools,
         workflow_id=workflow_id,
+        handoff_to=handoff_to,
     )
     db.add(agent)
     await db.commit()

@@ -4,13 +4,16 @@
 
 import { useCallback, useState } from "react";
 import { useAgentStream, type StreamEvent } from "@/lib/useAgentStream";
-import { useRunStore } from "@/lib/store";
+import { useRunStore, dedupeTranscript } from "@/lib/store";
 
 export function ChatPanel({ workflowId }: { workflowId: number }) {
   const [prompt, setPrompt] = useState("");
   const applyEvent = useRunStore((s) => s.applyEvent);
   const resetRun = useRunStore((s) => s.resetRun);
-  const transcript = useRunStore((s) => s.transcript);
+  const rawTranscript = useRunStore((s) => s.transcript);
+  const transcript = dedupeTranscript(rawTranscript);
+  const liveNode = useRunStore((s) => s.liveNode);
+  const liveText = useRunStore((s) => s.liveText);
   const error = useRunStore((s) => s.error);
 
   const onEvent = useCallback(
@@ -44,6 +47,16 @@ export function ChatPanel({ workflowId }: { workflowId: number }) {
             </div>
           </div>
         ))}
+        {running && liveText && (
+          <div className="rounded-[10px] bg-surface-2/60 p-3">
+            <div className="mb-1 text-[12px] font-medium text-accent">
+              {liveNode} <span className="text-text-muted">· typing…</span>
+            </div>
+            <div className="whitespace-pre-wrap text-[14px] text-text-muted">
+              {liveText.slice(-600)}
+            </div>
+          </div>
+        )}
         {error && (
           <div className="rounded-[10px] border border-status-error p-3 text-[13px] text-status-error">
             {error}

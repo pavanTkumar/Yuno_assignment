@@ -10,11 +10,32 @@ export interface AgentMessage {
   text: string;
 }
 
+/**
+ * Collapse the supervisor's echo of a worker's output.
+ * langgraph-supervisor re-streams the final answer through the supervisor
+ * namespace; we drop any earlier entry whose text is fully contained in a
+ * later, longer entry so the chat shows each unique message once.
+ */
+export function dedupeTranscript(t: AgentMessage[]): AgentMessage[] {
+  const norm = (s: string) => s.replace(/\s+/g, " ").trim();
+  return t.filter((m, i) => {
+    const a = norm(m.text);
+    if (!a) return false;
+    return !t.some(
+      (other, j) =>
+        j > i && norm(other.text).includes(a) && norm(other.text) !== a,
+    );
+  });
+}
+
 interface RunState {
   // node id -> status (drives canvas highlighting)
   nodeStatus: Record<string, NodeStatus>;
-  // streamed assistant text, keyed by node (dedup-friendly)
+  // authoritative per-agent messages (built from agent_message events)
   transcript: AgentMessage[];
+  // transient live-typing preview from token events
+  liveNode: string | null;
+  liveText: string;
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
@@ -30,6 +51,8 @@ interface RunState {
 export const useRunStore = create<RunState>((set) => ({
   nodeStatus: {},
   transcript: [],
+  liveNode: null,
+  liveText: "",
   inputTokens: 0,
   outputTokens: 0,
   totalTokens: 0,
@@ -41,6 +64,8 @@ export const useRunStore = create<RunState>((set) => ({
     set({
       nodeStatus: {},
       transcript: [],
+      liveNode: null,
+      liveText: "",
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
@@ -58,20 +83,24 @@ export const useRunStore = create<RunState>((set) => ({
           return {
             nodeStatus: { ...s.nodeStatus, [e.data.node]: "running" },
           };
-        case "token": {
-          const last = s.transcript[s.transcript.length - 1];
-          const transcript =
-            last && last.node === e.data.node
-              ? [
-                  ...s.transcript.slice(0, -1),
-                  { node: e.data.node, text: last.text + e.data.text },
-                ]
-              : [...s.transcript, { node: e.data.node, text: e.data.text }];
+        case "token":
+          // Tokens only drive the "running" pulse + a live-typing preview.
+          // The authoritative transcript is built from agent_message events
+          // (reliable + correctly attributed even for non-streaming agents).
           return {
-            transcript,
+            liveNode: e.data.node,
+            liveText: s.liveText + e.data.text,
             nodeStatus: { ...s.nodeStatus, [e.data.node]: "running" },
           };
-        }
+        case "agent_message":
+          return {
+            transcript: [
+              ...s.transcript,
+              { node: e.data.node, text: e.data.text },
+            ],
+            liveText: "",
+            liveNode: null,
+          };
         case "node_end":
           return {
             nodeStatus: { ...s.nodeStatus, [e.data.node]: "done" },

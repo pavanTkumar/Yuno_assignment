@@ -39,6 +39,8 @@ class Agent(Base):
     model: Mapped[str] = mapped_column(String(60), nullable=False, default="gpt-4o-mini")
     # List of tool names this agent may use (e.g. ["web_search"]).
     tools: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    # Optional deterministic next-agent handoff (name of another agent).
+    handoff_to: Mapped[str | None] = mapped_column(String(80), nullable=True)
     # Which workflow this agent belongs to (templates create their own agents).
     workflow_id: Mapped[int | None] = mapped_column(
         ForeignKey("workflows.id"), nullable=True

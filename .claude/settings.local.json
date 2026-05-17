@@ -40,7 +40,22 @@
       "Bash(pnpm start *)",
       "Bash(curl -s http://127.0.0.1:3000/workflows)",
       "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('nodes:',[n['id'] for n in d['nodes']],'edges:',[\\(e['source'],e['target']\\) for e in d['edges']]\\)\")",
-      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write one sentence about Jupiter.\"}' --max-time 120)"
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write one sentence about Jupiter.\"}' --max-time 120)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write 2 sentences about the Moon.\"}' --max-time 150)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:3000/)",
+      "Bash(python3 -c \"import sys,json; print\\([\\(w['id'],w['name'],[a['name'] for a in w['agents']]\\) for w in json.load\\(sys.stdin\\)]\\)\")",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write a short note on MS Dhoni.\"}' --max-time 150)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write a brief note on the planet Saturn.\"}' --max-time 120)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Write a short note on global warming\"}' --max-time 120)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"One sentence on global warming.\"}' --max-time 90)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"Two sentences about the Moon.\"}' --max-time 90)",
+      "Bash(curl -sN -X POST http://127.0.0.1:8000/runs -H \"Content-Type: application/json\" -d '{\"workflow_id\":1,\"prompt\":\"One sentence on Mars.\"}' --max-time 90)",
+      "Bash(curl -s http://127.0.0.1:8000/runs)",
+      "Bash(python3 -c \"import sys,json; [print\\('run',r['id'],'thread',r['thread_id'],'status',r['status'],'tok',r['total_tokens'],'cost',r['cost_usd']\\) for r in json.load\\(sys.stdin\\)]\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/health)",
+      "Bash(echo \"backend: $\\(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/health\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)",
+      "Bash(echo \"frontend: $\\(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/\\)\")"
     ]
   }
 }

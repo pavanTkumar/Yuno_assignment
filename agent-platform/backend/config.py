@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Literal
 
 import structlog
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,16 +32,23 @@ class Settings(BaseSettings):
     )
 
     # LLM — OpenAI-compatible providers, preferred in order:
-    # OpenRouter (free, good tool-calling) > Groq > OpenAI.
+    # OpenAI (spec-intended; most reliable supervisor handoffs) >
+    # OpenRouter (free) > Groq (free).
     openrouter_api_key: str = ""
     groq_api_key: str = ""
-    openai_api_key: str = ""
+    # Accept both OPENAI_API_KEY (standard) and OPEN_AI_API_KEY (common typo).
+    openai_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENAI_API_KEY", "OPEN_AI_API_KEY"),
+    )
     # Optional explicit overrides; otherwise derived from the active provider.
     llm_base_url: str = ""
     default_model: str = ""
 
     @property
     def llm_provider(self) -> str:
+        if self.openai_api_key:
+            return "openai"
         if self.openrouter_api_key:
             return "openrouter"
         if self.groq_api_key:
