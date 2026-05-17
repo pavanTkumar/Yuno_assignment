@@ -1,0 +1,35 @@
+# One-command stack: backend (FastAPI+LangGraph) + frontend (Next.js).
+# Usage: cp .env.example .env  (fill keys)  then  docker compose up
+
+services:
+  backend:
+    build: ./agent-platform/backend
+    env_file: .env
+    environment:
+      # SQLite on a dedicated volume path (not /app, which holds the code).
+      DATABASE_URL: sqlite+aiosqlite:////data/agents.db
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - agents-db:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./agent-platform/frontend
+      args:
+        # Browser talks to the host-mapped backend port.
+        NEXT_PUBLIC_BACKEND_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  agents-db:
