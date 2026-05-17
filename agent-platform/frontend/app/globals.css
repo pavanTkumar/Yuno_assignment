@@ -1,53 +1,107 @@
 @import "tailwindcss";
 
-/* ── DESIGN.md tokens (dark-first, refined/minimal) ────────────────────── */
+/* ── DESIGN.md tokens (dark-first, refined / premium — Linear/Vercel grade) ── */
 :root {
-  --bg: #0a0b0f;
-  --surface: #13151c;
-  --surface-2: #1b1e27;
-  --border: #2a2e3a;
+  --bg: #08090c;
+  --surface: #101218;
+  --surface-2: #181b23;
+  --surface-3: #1f232d;
+  --border: #262a35;
+  --border-strong: #353a48;
   --primary: #6366f1;
+  --primary-hover: #717bff;
   --primary-fg: #ffffff;
-  --accent: #22d3ee;
-  --text: #e6e8ee;
-  --text-muted: #8a90a2;
-  --status-idle: #8a90a2;
-  --status-running: #22d3ee;
+  --accent: #2dd4bf;
+  --text: #eceef4;
+  --text-muted: #8b91a3;
+  --text-faint: #5c6172;
+  --status-idle: #6b7185;
+  --status-running: #2dd4bf;
   --status-error: #f87171;
   --success: #34d399;
-  --radius: 10px;
-  --radius-sm: 6px;
-  --sidebar-w: 240px;
-  --header-h: 56px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --sidebar-w: 248px;
+  --header-h: 60px;
+  --ring-running: rgba(45, 212, 191, 0.55);
+  --glow-primary: rgba(99, 102, 241, 0.35);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
   --color-accent: var(--accent);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
   --color-status-idle: var(--status-idle);
   --color-status-running: var(--status-running);
   --color-status-error: var(--status-error);
   --color-success: var(--success);
+  --radius-token: var(--radius);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
+html,
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 21px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Active edge pulse + running-node glow (DESIGN.md motion) */
+/* Subtle ambient backdrop — adds depth without distraction */
+body {
+  background-image:
+    radial-gradient(
+      900px circle at 0% 0%,
+      rgba(99, 102, 241, 0.06),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px circle at 100% 100%,
+      rgba(45, 212, 191, 0.04),
+      transparent 50%
+    );
+  background-attachment: fixed;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+  background-clip: padding-box;
+}
+
+/* ── Active edge pulse + running-node glow (DESIGN.md motion) ───────────── */
 @keyframes edge-dash {
   to {
     stroke-dashoffset: -16;
@@ -55,18 +109,83 @@ body {
 }
 .edge-active {
   stroke: var(--accent);
-  stroke-dasharray: 6 4;
-  animation: edge-dash 1.2s linear infinite;
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+  animation: edge-dash 0.9s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.5));
 }
+
 @keyframes node-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+    box-shadow:
+      0 0 0 0 rgba(45, 212, 191, 0.45),
+      0 8px 24px -10px rgba(45, 212, 191, 0.35);
   }
   50% {
-    box-shadow: 0 0 14px 3px rgba(34, 211, 238, 0.55);
+    box-shadow:
+      0 0 18px 4px rgba(45, 212, 191, 0.5),
+      0 8px 28px -8px rgba(45, 212, 191, 0.45);
   }
 }
 .node-running {
-  animation: node-pulse 1.5s ease-in-out infinite;
+  animation: node-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Shared motion primitives ──────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: fade-in-up 0.22s ease-out both;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* ── ReactFlow theme overrides ─────────────────────────────────────────── */
+.react-flow__controls {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border);
+}
+.react-flow__controls-button {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 26px;
+  height: 26px;
+}
+.react-flow__controls-button:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+.react-flow__edge-path {
+  stroke-width: 1.5;
+}
+.react-flow__handle {
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--bg);
 }

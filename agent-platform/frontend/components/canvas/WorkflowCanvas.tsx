@@ -7,7 +7,9 @@ import { useMemo } from "react";
 import {
   ReactFlow,
   Background,
+  BackgroundVariant,
   Controls,
+  MarkerType,
   type Edge,
   type Node,
 } from "@xyflow/react";
@@ -60,9 +62,18 @@ export function WorkflowCanvas({ topology }: { topology: Topology }) {
       id: `${e.source}-${e.target}`,
       source: e.source,
       target: e.target,
+      type: "smoothstep",
       animated: active,
       className: active ? "edge-active" : undefined,
-      style: active ? undefined : { stroke: "var(--border)" },
+      style: active
+        ? undefined
+        : { stroke: "var(--border-strong)", strokeWidth: 1.5 },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 16,
+        height: 16,
+        color: active ? "var(--accent)" : "var(--border-strong)",
+      },
     };
   });
 
@@ -73,10 +84,16 @@ export function WorkflowCanvas({ topology }: { topology: Topology }) {
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{ padding: 0.35 }}
         proOptions={{ hideAttribution: true }}
         colorMode="dark"
       >
-        <Background color="#2a2e3a" gap={20} />
+        <Background
+          variant={BackgroundVariant.Dots}
+          color="var(--border)"
+          gap={22}
+          size={1.5}
+        />
         <Controls showInteractive={false} />
       </ReactFlow>
     </div>

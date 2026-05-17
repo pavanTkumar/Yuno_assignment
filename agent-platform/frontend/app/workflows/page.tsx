@@ -46,14 +46,27 @@ function WorkflowsView() {
   return (
     <div className="flex h-screen flex-col">
       <header
-        className="flex items-center border-b border-border px-6 text-[20px] font-semibold text-text"
+        className="flex items-center justify-between border-b border-border px-6"
         style={{ height: "var(--header-h)" }}
       >
-        {workflow.name}
+        <div className="flex items-center gap-3">
+          <span className="text-[12px] uppercase tracking-wider text-text-faint">
+            Workflow
+          </span>
+          <span className="h-3 w-px bg-border" />
+          <h1 className="text-[16px] font-semibold tracking-tight text-text">
+            {workflow.name}
+          </h1>
+        </div>
+        {workflow.is_template && (
+          <span className="rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-text-muted">
+            template
+          </span>
+        )}
       </header>
       <UsageBar />
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1">
+        <div className="relative min-w-0 flex-1 bg-bg">
           <WorkflowCanvas topology={topology} />
         </div>
         <div className="flex w-100 flex-col border-l border-border bg-surface">
