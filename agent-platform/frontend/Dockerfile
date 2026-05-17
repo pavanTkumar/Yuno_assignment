@@ -1,11 +1,16 @@
-# Frontend — Next.js 16 (Node 20, pnpm, standalone output)
+# Frontend — Next.js 16 (Node 22, pnpm, standalone output)
 FROM node:22-slim AS builder
 
 RUN corepack enable
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# Network-resilient install (Colima's NAT can drop pnpm's many parallel
+# connections — raise retries/timeouts, cap concurrency).
+RUN pnpm config set fetch-retries 5 \
+ && pnpm config set fetch-retry-maxtimeout 120000 \
+ && pnpm config set network-concurrency 4 \
+ && pnpm install --frozen-lockfile
 
 COPY . .
 # Baked at build time; overridable via compose for the browser bundle.
