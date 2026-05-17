@@ -1,7 +1,9 @@
 # Frontend — Next.js 16 (Node 22, pnpm, standalone output)
 FROM node:22-slim AS builder
 
-RUN corepack enable
+# Pin pnpm 10 (matches the committed lockfile; pnpm 11 hard-fails on
+# un-approved dependency build scripts in non-interactive mode).
+RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./

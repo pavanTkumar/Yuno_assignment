@@ -17,9 +17,11 @@ from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# Repo root = backend/ -> agent-platform/ -> <root>. Resolve .env there so the
-# app works regardless of the process CWD (uvicorn runs from backend/).
-_ROOT_ENV = Path(__file__).resolve().parents[2] / ".env"
+# Local dev: the repo-root .env (backend/ -> agent-platform/ -> <root>) so the
+# app works regardless of CWD. In Docker the code lives at /app with no repo
+# root above it — env comes from compose's env_file, so this is best-effort.
+_parents = Path(__file__).resolve().parents
+_ROOT_ENV = (_parents[2] / ".env") if len(_parents) > 2 else Path(".env")
 
 
 class Settings(BaseSettings):
